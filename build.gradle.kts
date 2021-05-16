@@ -38,7 +38,7 @@ subprojects {
         implementation("org.slf4j", "slf4j-simple", "1.7.30")
 
         testImplementation("org.junit.jupiter", "junit-jupiter", "5.7.0")
-        testImplementation("io.mockk","mockk","1.11.0")
+        testImplementation("io.mockk", "mockk", "1.11.0")
         testImplementation("org.assertj", "assertj-core", "3.19.0")
     }
 
