@@ -17,9 +17,6 @@ dependencies {
     implementation("com.gitlab.kordlib", "kordx.emoji", "0.4.0")
 
     implementation("com.google.cloud", "google-cloud-dialogflow", "3.0.2")
-
-    implementation("org.jetbrains.exposed", "exposed-core", "0.31.1")
-    implementation("org.jetbrains.exposed", "exposed-jdbc", "0.31.1")
 }
 
 application {
@@ -28,5 +25,5 @@ application {
 }
 
 tasks.withType<ShadowJar> {
-    archiveName = "BeachBunnyBot-${version}.jar"
+    archiveName = "BeachBunnyBot-${archiveVersion.get()}.jar"
 }

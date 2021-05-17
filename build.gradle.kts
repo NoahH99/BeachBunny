@@ -37,6 +37,9 @@ subprojects {
         implementation("io.github.microutils", "kotlin-logging-jvm", "2.0.6")
         implementation("org.slf4j", "slf4j-simple", "1.7.30")
 
+        implementation("org.jetbrains.exposed", "exposed-core", "0.31.1")
+        implementation("org.jetbrains.exposed", "exposed-jdbc", "0.31.1")
+
         testImplementation("org.junit.jupiter", "junit-jupiter", "5.7.0")
         testImplementation("io.mockk", "mockk", "1.11.0")
         testImplementation("org.assertj", "assertj-core", "3.19.0")
