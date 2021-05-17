@@ -1,6 +1,7 @@
 package com.noahhendrickson.beachbunny.bot
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.noahhendrickson.beachbunny.bot.extensions.DatabaseExtension
 import com.noahhendrickson.beachbunny.bot.extensions.GreeterExtension
 import com.noahhendrickson.beachbunny.database.Database
 import dev.kord.common.entity.PresenceStatus
@@ -23,11 +24,12 @@ suspend fun main() {
         }
 
         presence {
-            playing("the same song for 6 weeks")
-            status = PresenceStatus.Online
+            playing("recovering data...")
+            status = PresenceStatus.DoNotDisturb
         }
 
         extensions {
+            add(::DatabaseExtension)
             add(::GreeterExtension)
         }
     }
