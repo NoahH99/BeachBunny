@@ -21,3 +21,5 @@ gradle-app.setting
 *.rar
 
 *.db
+
+token.json
