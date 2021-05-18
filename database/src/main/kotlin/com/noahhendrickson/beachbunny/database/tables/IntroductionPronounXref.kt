@@ -6,6 +6,8 @@ import org.jetbrains.exposed.sql.ReferenceOption
 object IntroductionPronounXref : IntIdTable() {
 
     val introductionId = reference("introduction_id", IntroductionTable.id, onDelete = ReferenceOption.CASCADE)
-    val pronounId = reference("pronoun_id", PronounTable.id, onDelete = ReferenceOption.CASCADE)
+    val pronounId = reference("pronoun_id", PronounTable.id)
+
+    val pronounEmoji = varchar("pronoun_emoji", 15)
 
 }
