@@ -16,6 +16,7 @@ import com.noahhendrickson.beachbunny.database.tables.selectPronoun
 import dev.kord.common.Color
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
@@ -23,7 +24,7 @@ import dev.kord.core.entity.Member
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
-import kotlinx.coroutines.delay
+import dev.kord.core.event.message.ReactionRemoveEvent
 import kotlinx.coroutines.flow.firstOrNull
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -70,41 +71,14 @@ class IntroductionExtension(override val bot: ExtensibleBot) : Extension(bot) {
             check(::noGuild)
             check(::isNotBot)
 
-            action {
-                val kord = event.kord
-                val userSnowflake = event.userId
-                val emoji = event.emoji
-                if (emoji !is ReactionEmoji.Unicode) return@action
+            action { event.kord.handleIntroductionReaction(event.userId.value, event.emoji, addReaction = true) }
+        }
 
-                val unicode = emoji.name
+        event<ReactionRemoveEvent> {
+            check(::noGuild)
+            check(::isNotBot)
 
-                newSuspendedTransaction {
-                    val name = selectName(userSnowflake.value, unicode)
-                    val pronoun = selectPronoun(userSnowflake.value, unicode)
-
-                    if (name != null) {
-                        kord.getGuild(Snowflake(name.first))?.apply {
-                            getMemberOrNull(Snowflake(name.second))
-                                ?.edit { nickname = name.third }
-                        }
-                    }
-
-                    if (pronoun != null) {
-                        kord.getGuild(Snowflake(pronoun.first))?.apply guild@{
-                            getMemberOrNull(Snowflake(pronoun.second))?.apply member@{
-                                val role = this@guild.roles.firstOrNull { it.name == pronoun.third }
-
-                                if (role != null) addRole(role.id)
-                                else createRole {
-                                    this.name = pronoun.third
-                                    color = Color(0xD6CF89)
-                                    permissions = Permissions()
-                                }.apply { this@member.addRole(id) }
-                            }
-                        }
-                    }
-                }
-            }
+            action { event.kord.handleIntroductionReaction(event.userId.value, event.emoji, addReaction = false) }
         }
     }
 }
@@ -138,4 +112,46 @@ private suspend fun Introduction.sendTo(member: Member) {
             val reactions = pronouns.size + if (name.isNotEmpty()) 1 else 0
             repeat(reactions) { addReaction(Pronoun.unicodes.elementAt(it)) }
         }
+}
+
+private suspend fun Kord.handleIntroductionReaction(
+    userSnowflake: Long,
+    emoji: ReactionEmoji,
+    addReaction: Boolean
+) {
+    if (emoji !is ReactionEmoji.Unicode) return
+
+    val unicode = emoji.name
+
+    newSuspendedTransaction {
+        val name = selectName(userSnowflake, unicode)
+        val pronoun = selectPronoun(userSnowflake, unicode)
+
+        name?.apply {
+            getGuild(Snowflake(name.first))?.apply {
+                getMemberOrNull(Snowflake(name.second))
+                    ?.edit { nickname = if (addReaction) name.third else null }
+            }
+        }
+
+        pronoun?.apply {
+            getGuild(Snowflake(pronoun.first))?.apply guild@{
+                getMemberOrNull(Snowflake(pronoun.second))?.apply member@{
+                    val role = this@guild.roles.firstOrNull { it.name == pronoun.third }
+
+                    if (role != null) {
+                        if (addReaction) addRole(role.id)
+                        else removeRole(role.id)
+                    } else {
+                        if (addReaction)
+                            createRole {
+                                this.name = pronoun.third
+                                color = Color(0xD6CF89)
+                                permissions = Permissions()
+                            }.apply { this@member.addRole(id) }
+                    }
+                }
+            }
+        }
+    }
 }
