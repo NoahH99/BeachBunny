@@ -6,8 +6,8 @@ import com.kotlindiscord.kord.extensions.checks.noGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.addReaction
 import com.noahhendrickson.beachbunny.bot.dialogflow.createDialogflowAssistant
-import com.noahhendrickson.beachbunny.bot.introduction.IntroductionParser
 import com.noahhendrickson.beachbunny.bot.isNotBot
+import com.noahhendrickson.beachbunny.bot.util.IntroductionParser
 import com.noahhendrickson.beachbunny.bot.util.getColor
 import com.noahhendrickson.beachbunny.database.models.Introduction
 import com.noahhendrickson.beachbunny.database.models.Pronoun
