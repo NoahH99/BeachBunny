@@ -25,20 +25,14 @@ object Database {
         UserTable
     )
 
-    fun init(dropTables: Boolean = false): Database {
-        val database = Database.connect(
+    fun init() {
+        Database.connect(
             url = "jdbc:postgresql://$url",
             driver = "org.postgresql.Driver",
             user = user,
             password = password,
         )
 
-        transaction {
-            if (dropTables) SchemaUtils.drop(*tables)
-
-            SchemaUtils.createMissingTablesAndColumns(*tables)
-        }
-
-        return database
+        transaction { SchemaUtils.createMissingTablesAndColumns(*tables) }
     }
 }

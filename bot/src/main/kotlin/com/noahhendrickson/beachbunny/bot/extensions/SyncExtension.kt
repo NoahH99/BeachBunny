@@ -21,8 +21,6 @@ import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.system.measureTimeMillis
 
-private val logger = KotlinLogging.logger {}
-
 @ExperimentalStdlibApi
 @PrivilegedIntent
 class SyncExtension(override val bot: ExtensibleBot) : Extension(bot) {
@@ -53,8 +51,6 @@ class SyncExtension(override val bot: ExtensibleBot) : Extension(bot) {
     }
 
     private suspend fun ReadyEvent.startRecovery() {
-        logger.info { "Starting recovery..." }
-
         val time = measureTimeMillis {
             val roleIds: MutableMap<Long, Set<Long>> = mutableMapOf()
 
@@ -82,7 +78,5 @@ class SyncExtension(override val bot: ExtensibleBot) : Extension(bot) {
                 status = PresenceStatus.Online
             }
         }
-
-        logger.info { "Finished recovery in ${time}ms." }
     }
 }

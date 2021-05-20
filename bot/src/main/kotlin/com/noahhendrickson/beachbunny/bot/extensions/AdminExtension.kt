@@ -12,11 +12,9 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.system.measureTimeMillis
 
-private val logger = KotlinLogging.logger {}
-
 @KordPreview
 @ExperimentalStdlibApi
-class AdminExtension(override val bot: ExtensibleBot, private val database: Database) : Extension(bot) {
+class AdminExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
     override val name = "Admin"
 
@@ -28,7 +26,7 @@ class AdminExtension(override val bot: ExtensibleBot, private val database: Data
             action {
                 if (user?.id?.value != 216709975307845633L) return@action
 
-                newSuspendedTransaction(db = database) {
+                newSuspendedTransaction {
                     var response = "No Result"
 
                     val time = measureTimeMillis {

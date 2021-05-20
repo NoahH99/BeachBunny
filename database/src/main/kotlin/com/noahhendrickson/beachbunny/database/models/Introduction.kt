@@ -1,6 +1,5 @@
 package com.noahhendrickson.beachbunny.database.models
 
-
 data class Introduction(
     val userSnowflake: Long,
     val guildSnowflake: Long,

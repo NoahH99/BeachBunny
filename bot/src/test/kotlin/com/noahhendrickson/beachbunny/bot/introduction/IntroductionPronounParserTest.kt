@@ -1,5 +1,6 @@
 package com.noahhendrickson.beachbunny.bot.introduction
 
+import com.noahhendrickson.beachbunny.bot.util.IntroductionParser
 import com.noahhendrickson.beachbunny.database.models.Pronoun
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

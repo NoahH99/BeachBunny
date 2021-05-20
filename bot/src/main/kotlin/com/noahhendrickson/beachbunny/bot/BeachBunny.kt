@@ -2,10 +2,7 @@ package com.noahhendrickson.beachbunny.bot
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.noahhendrickson.beachbunny.bot.database.prefix
-import com.noahhendrickson.beachbunny.bot.extensions.AdminExtension
-import com.noahhendrickson.beachbunny.bot.extensions.GreeterExtension
-import com.noahhendrickson.beachbunny.bot.extensions.IntroductionExtension
-import com.noahhendrickson.beachbunny.bot.extensions.SyncExtension
+import com.noahhendrickson.beachbunny.bot.extensions.*
 import com.noahhendrickson.beachbunny.database.Database
 import com.noahhendrickson.beachbunny.database.tables.GuildTable
 import dev.kord.common.annotation.KordPreview
@@ -20,7 +17,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 suspend fun main() {
     val token = System.getenv()["BOT_TOKEN"] ?: throw IllegalArgumentException("No token provided!")
 
-    val database = Database.init(dropTables = true)
+    Database.init()
 
     val bot = ExtensibleBot(token) {
         intents {
@@ -41,9 +38,13 @@ suspend fun main() {
         }
 
         extensions {
-            add { AdminExtension(it, database) }
+            sentry = false
+            help = false
+
+            add(::AdminExtension)
             add(::GreeterExtension)
             add(::IntroductionExtension)
+            add(::StaffExtension)
             add(::SyncExtension)
         }
     }

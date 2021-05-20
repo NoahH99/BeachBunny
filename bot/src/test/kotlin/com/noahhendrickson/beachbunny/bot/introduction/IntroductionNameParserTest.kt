@@ -1,5 +1,6 @@
 package com.noahhendrickson.beachbunny.bot.introduction
 
+import com.noahhendrickson.beachbunny.bot.util.IntroductionParser
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 

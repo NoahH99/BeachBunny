@@ -29,11 +29,8 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.event.message.ReactionRemoveEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
-import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
-
-private val logger = KotlinLogging.logger {}
 
 class IntroductionExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
@@ -46,7 +43,7 @@ class IntroductionExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
         event<MessageCreateEvent> {
             check(::isNotBot)
-            check(inChannel(Snowflake(642215940469161984))) // This is for development purposes only.
+            check(inChannel(Snowflake(844932506046300221)))
 
             action {
                 val member = event.member ?: return@action
@@ -154,7 +151,6 @@ private suspend fun Kord.handleIntroductionReaction(
                         if (addReaction) addRole(role.id)
                         else removeRole(role.id)
 
-
                         getDmChannelOrNull()?.apply {
                             if (addReaction) createMessageAndDelete("You now have the **${role.name}** role.")
                             else createMessageAndDelete("You no longer have the ${role.name} role.")
@@ -167,7 +163,7 @@ private suspend fun Kord.handleIntroductionReaction(
                                 permissions = Permissions()
                             }.apply role@{
                                 this@member.apply {
-                                    addRole(id)
+                                    addRole(this@role.id)
                                     getDmChannelOrNull()
                                         ?.createMessageAndDelete("You now have the **${this@role.name}** role.")
 

@@ -6,8 +6,6 @@ import com.noahhendrickson.beachbunny.database.models.Pronoun
 import com.noahhendrickson.beachbunny.database.models.toPronoun
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
-
 class IntroductionParser(content: String) {
 
     private val contentSplit = content.split("\n")

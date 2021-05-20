@@ -9,8 +9,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.message.MessageCreateEvent
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
-
 class GreeterExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
     override val name = "Greeter"
@@ -22,8 +20,6 @@ class GreeterExtension(override val bot: ExtensibleBot) : Extension(bot) {
             action {
                 val message = event.message
                 message.addReaction(Emojis.wave.code)
-
-                logger.info { "Adding wave emoji to ${message.id.asString}." }
             }
         }
     }

@@ -13,4 +13,3 @@ fun insertPronounAndGetId(value: String) =
     PronounTable.insertAndGetId({ PronounTable.value eq value }) {
         it[PronounTable.value] = value
     }
-
