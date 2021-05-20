@@ -2,6 +2,8 @@ package com.noahhendrickson.beachbunny.bot.extensions
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.noahhendrickson.beachbunny.bot.database.isAdmin
+import com.noahhendrickson.beachbunny.bot.database.isStaff
 import com.noahhendrickson.beachbunny.database.tables.deleteRole
 import com.noahhendrickson.beachbunny.database.tables.insertRoleAndGetId
 import com.noahhendrickson.beachbunny.database.tables.insertUserAndGetId
@@ -37,7 +39,12 @@ class SyncExtension(override val bot: ExtensibleBot) : Extension(bot) {
                         is RoleDeleteEvent -> deleteRole(event.roleId.value, event.guildId.value)
                         is MemberJoinEvent -> {
                             val member = event.member
-                            insertUserAndGetId(member.id.value, bot = member.isBot)
+                            insertUserAndGetId(
+                                userSnowflake = member.id.value,
+                                bot = member.isBot,
+                                staff = member.isStaff,
+                                admin = member.isAdmin
+                            )
                         }
                     }
                 }
@@ -52,14 +59,19 @@ class SyncExtension(override val bot: ExtensibleBot) : Extension(bot) {
             val roleIds: MutableMap<Long, Set<Long>> = mutableMapOf()
 
             getGuilds().collect { guild ->
-                logger.info { "Guild: ${guild.name}" }
-
                 roleIds[guild.id.value] = buildSet {
                     guild.roleIds.forEach { id -> add(id.value) }
                 }
 
                 guild.requestMembers().collect { chunk ->
-                    chunk.members.forEach { member -> insertUserAndGetId(member.id.value, bot = member.isBot) }
+                    chunk.members.forEach { member ->
+                        insertUserAndGetId(
+                            userSnowflake = member.id.value,
+                            bot = member.isBot,
+                            staff = member.isStaff,
+                            admin = member.isAdmin
+                        )
+                    }
                 }
             }
 
