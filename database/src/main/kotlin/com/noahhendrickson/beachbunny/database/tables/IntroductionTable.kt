@@ -1,8 +1,8 @@
 package com.noahhendrickson.beachbunny.database.tables
 
-import com.noahhendrickson.beachbunny.database.insertAndGetId
 import com.noahhendrickson.beachbunny.database.models.Introduction
 import com.noahhendrickson.beachbunny.database.models.Pronoun
+import com.noahhendrickson.beachbunny.database.util.insertAndGetId
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
 

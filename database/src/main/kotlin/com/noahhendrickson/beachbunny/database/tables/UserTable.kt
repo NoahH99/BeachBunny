@@ -1,6 +1,6 @@
 package com.noahhendrickson.beachbunny.database.tables
 
-import com.noahhendrickson.beachbunny.database.insertAndGetId
+import com.noahhendrickson.beachbunny.database.util.insertAndGetId
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 object UserTable : IntIdTable() {

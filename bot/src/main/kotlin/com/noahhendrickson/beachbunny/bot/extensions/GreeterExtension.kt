@@ -23,7 +23,7 @@ class GreeterExtension(override val bot: ExtensibleBot) : Extension(bot) {
                 val message = event.message
                 message.addReaction(Emojis.wave.code)
 
-                logger.info { "Adding wave emoji to ${message.id}." }
+                logger.info { "Adding wave emoji to ${message.id.asString}." }
             }
         }
     }

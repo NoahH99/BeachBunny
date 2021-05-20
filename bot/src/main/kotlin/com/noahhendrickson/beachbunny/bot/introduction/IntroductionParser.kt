@@ -67,4 +67,8 @@ class IntroductionParser(content: String) {
 
         return ""
     }
+
+    operator fun component1() = this
+    operator fun component2() = parseName()
+    operator fun component3() = parsePronouns()
 }
