@@ -1,6 +1,9 @@
 package com.noahhendrickson.beachbunny.bot.dialogflow
 
-import com.google.cloud.dialogflow.v2.*
+import com.google.cloud.dialogflow.v2.DetectIntentRequest
+import com.google.cloud.dialogflow.v2.QueryInput
+import com.google.cloud.dialogflow.v2.QueryParameters
+import com.google.cloud.dialogflow.v2.TextInput
 
 suspend fun textInput(builder: suspend TextInput.Builder.() -> Unit = {}): TextInput {
     return TextInput.newBuilder().apply { builder() }.build()

@@ -1,11 +1,8 @@
 package com.noahhendrickson.beachbunny.database
 
 import com.noahhendrickson.beachbunny.database.tables.*
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.statements.UpdateBuilder
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object Database {

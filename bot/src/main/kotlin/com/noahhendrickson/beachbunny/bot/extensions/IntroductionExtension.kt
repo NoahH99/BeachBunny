@@ -8,6 +8,7 @@ import com.kotlindiscord.kord.extensions.utils.addReaction
 import com.noahhendrickson.beachbunny.bot.dialogflow.createDialogflowAssistant
 import com.noahhendrickson.beachbunny.bot.introduction.IntroductionParser
 import com.noahhendrickson.beachbunny.bot.isNotBot
+import com.noahhendrickson.beachbunny.bot.util.getColor
 import com.noahhendrickson.beachbunny.database.models.Introduction
 import com.noahhendrickson.beachbunny.database.models.Pronoun
 import com.noahhendrickson.beachbunny.database.tables.insert
@@ -22,9 +23,11 @@ import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.ReactionEmoji
+import dev.kord.core.entity.channel.DmChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.event.message.ReactionRemoveEvent
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -91,6 +94,8 @@ private suspend fun Introduction.sendTo(member: Member) {
                 icon = member.avatar.url
             }
 
+            color = member.getColor()
+
             description = buildString {
                 append("Thanks for introducing yourself to the Beach Bunny community!\n\n")
                 append("We detected a name and/or pronoun(s) from your messages. ")
@@ -129,8 +134,14 @@ private suspend fun Kord.handleIntroductionReaction(
 
         name?.apply {
             getGuild(Snowflake(name.first))?.apply {
-                getMemberOrNull(Snowflake(name.second))
-                    ?.edit { nickname = if (addReaction) name.third else null }
+                getMemberOrNull(Snowflake(name.second))?.apply {
+                    edit { nickname = if (addReaction) name.third else null }
+
+                    getDmChannelOrNull()?.apply {
+                        if (addReaction) createMessageAndDelete("You now have the nickname **${name.third}**.")
+                        else createMessageAndDelete("You no longer have a nickname.")
+                    }
+                }
             }
         }
 
@@ -142,16 +153,35 @@ private suspend fun Kord.handleIntroductionReaction(
                     if (role != null) {
                         if (addReaction) addRole(role.id)
                         else removeRole(role.id)
+
+
+                        getDmChannelOrNull()?.apply {
+                            if (addReaction) createMessageAndDelete("You now have the **${role.name}** role.")
+                            else createMessageAndDelete("You no longer have the ${role.name} role.")
+                        }
                     } else {
                         if (addReaction)
                             createRole {
                                 this.name = pronoun.third
                                 color = Color(0xD6CF89)
                                 permissions = Permissions()
-                            }.apply { this@member.addRole(id) }
+                            }.apply role@{
+                                this@member.apply {
+                                    addRole(id)
+                                    getDmChannelOrNull()
+                                        ?.createMessageAndDelete("You now have the **${this@role.name}** role.")
+
+                                }
+                            }
                     }
                 }
             }
         }
     }
+}
+
+private suspend fun DmChannel.createMessageAndDelete(content: String) {
+    val message = createMessage(content)
+    delay(7000)
+    message.delete()
 }

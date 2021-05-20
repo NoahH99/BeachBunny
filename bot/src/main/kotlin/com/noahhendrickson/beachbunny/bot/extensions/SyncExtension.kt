@@ -2,22 +2,20 @@ package com.noahhendrickson.beachbunny.bot.extensions
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.noahhendrickson.beachbunny.database.tables.*
+import com.noahhendrickson.beachbunny.database.tables.deleteRole
+import com.noahhendrickson.beachbunny.database.tables.insertRoleAndGetId
+import com.noahhendrickson.beachbunny.database.tables.insertUserAndGetId
+import com.noahhendrickson.beachbunny.database.tables.updateRoles
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.behavior.requestMembers
 import dev.kord.core.event.Event
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.MemberJoinEvent
-import dev.kord.core.event.guild.MemberLeaveEvent
-import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.role.RoleCreateEvent
 import dev.kord.core.event.role.RoleDeleteEvent
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.flow.collect
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.system.measureTimeMillis
 
