@@ -1,14 +1,19 @@
 package com.noahhendrickson.beachbunny.bot
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.noahhendrickson.beachbunny.bot.database.prefix
 import com.noahhendrickson.beachbunny.bot.extensions.GreeterExtension
 import com.noahhendrickson.beachbunny.bot.extensions.IntroductionExtension
 import com.noahhendrickson.beachbunny.bot.extensions.SyncExtension
 import com.noahhendrickson.beachbunny.database.Database
+import com.noahhendrickson.beachbunny.database.tables.GuildTable
+import dev.kord.common.annotation.KordPreview
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
+@KordPreview
 @PrivilegedIntent
 @ExperimentalStdlibApi
 suspend fun main() {
@@ -23,6 +28,10 @@ suspend fun main() {
             +Intent.GuildVoiceStates
             +Intent.GuildMessages
             +Intent.DirectMessagesReactions
+        }
+
+        commands {
+            prefix { newSuspendedTransaction { getGuild()?.prefix ?: GuildTable.defaultPrefix } }
         }
 
         presence {
