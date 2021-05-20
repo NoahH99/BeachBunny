@@ -1,3 +1,4 @@
 dependencies {
-    implementation("org.xerial", "sqlite-jdbc", "3.30.1")
+    implementation("org.postgresql", "postgresql", "42.2.2")
+    implementation("com.jakewharton.picnic", "picnic", "0.5.0")
 }

@@ -10,7 +10,14 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object Database {
 
-    private val path = System.getenv()["DATABASE_PATH"] ?: throw IllegalArgumentException("No database path found!")
+    private val url = System.getenv()["DATABASE_URL"]
+        ?: throw IllegalArgumentException("No DATABASE_URL environment variable found!")
+
+    private val user = System.getenv()["DATABASE_USER"]
+        ?: throw IllegalArgumentException("No DATABASE_USER environment variable found!")
+
+    private val password = System.getenv()["DATABASE_PASSWORD"]
+        ?: throw IllegalArgumentException("No DATABASE_PASSWORD environment variable found!")
 
     private val tables = arrayOf(
         GuildTable,
@@ -21,10 +28,12 @@ object Database {
         UserTable
     )
 
-    fun init(dropTables: Boolean = false) {
-        Database.connect(
-            url = "jdbc:sqlite:$path/beach-bunny-dev.db",
-            driver = "org.sqlite.JDBC"
+    fun init(dropTables: Boolean = false): Database {
+        val database = Database.connect(
+            url = "jdbc:postgresql://$url",
+            driver = "org.postgresql.Driver",
+            user = user,
+            password = password,
         )
 
         transaction {
@@ -32,21 +41,7 @@ object Database {
 
             SchemaUtils.createMissingTablesAndColumns(*tables)
         }
-    }
-}
 
-fun <Key : Comparable<Key>, T : IdTable<Key>> T.insertAndGetId(
-    expresion: SqlExpressionBuilder.() -> Op<Boolean>,
-    body: T.(UpdateBuilder<*>) -> Unit,
-): EntityID<Key> {
-    val select = select(expresion)
-
-    return when (select.count()) {
-        1L -> {
-            update(expresion, body = body)
-            select.first()[this.id]
-        }
-        0L -> insertIgnoreAndGetId(body)!!
-        else -> throw UnsupportedOperationException()
+        return database
     }
 }
