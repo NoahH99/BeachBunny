@@ -1,4 +1,4 @@
-package com.noahhendrickson.beachbunny.bot.introduction
+package com.noahhendrickson.beachbunny.bot.util
 
 import com.noahhendrickson.beachbunny.bot.dialogflow.DialogflowAssistant
 import com.noahhendrickson.beachbunny.bot.dialogflow.detectIntentTextAsync
