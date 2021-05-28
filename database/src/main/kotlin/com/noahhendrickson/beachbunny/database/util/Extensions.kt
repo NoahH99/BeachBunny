@@ -6,14 +6,15 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 
 fun <Key : Comparable<Key>, T : IdTable<Key>> T.insertAndGetId(
-    expresion: SqlExpressionBuilder.() -> Op<Boolean>,
+    expression: SqlExpressionBuilder.() -> Op<Boolean>,
     body: T.(UpdateBuilder<*>) -> Unit,
 ): EntityID<Key> {
-    val select = slice(id).select(expresion)
+    val select = slice(id).select(expression)
 
     return when (select.count()) {
+
         1L -> {
-            update(expresion, body = body)
+            update(expression, body = body)
             select.first()[id]
         }
         0L -> insertIgnoreAndGetId(body)!!

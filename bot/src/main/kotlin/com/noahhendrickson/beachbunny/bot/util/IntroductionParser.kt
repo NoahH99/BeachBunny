@@ -4,7 +4,6 @@ import com.noahhendrickson.beachbunny.bot.dialogflow.DialogflowAssistant
 import com.noahhendrickson.beachbunny.bot.dialogflow.detectIntentTextAsync
 import com.noahhendrickson.beachbunny.database.models.Pronoun
 import com.noahhendrickson.beachbunny.database.models.toPronoun
-import mu.KotlinLogging
 
 class IntroductionParser(content: String) {
 

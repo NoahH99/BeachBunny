@@ -5,13 +5,16 @@ import com.kotlindiscord.kord.extensions.checks.inChannel
 import com.kotlindiscord.kord.extensions.checks.noGuild
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.addReaction
+import com.noahhendrickson.beachbunny.bot.database.insertOrUpdate
+import com.noahhendrickson.beachbunny.bot.database.introductionChannelSnowflake
 import com.noahhendrickson.beachbunny.bot.dialogflow.createDialogflowAssistant
 import com.noahhendrickson.beachbunny.bot.isNotBot
 import com.noahhendrickson.beachbunny.bot.util.IntroductionParser
-import com.noahhendrickson.beachbunny.bot.util.getColor
+import com.noahhendrickson.beachbunny.bot.util.addBranding
+import com.noahhendrickson.beachbunny.bot.util.getTopRoleWithColor
 import com.noahhendrickson.beachbunny.database.models.Introduction
 import com.noahhendrickson.beachbunny.database.models.Pronoun
-import com.noahhendrickson.beachbunny.database.tables.insert
+import com.noahhendrickson.beachbunny.database.tables.insertOrUpdate
 import com.noahhendrickson.beachbunny.database.tables.selectName
 import com.noahhendrickson.beachbunny.database.tables.selectPronoun
 import dev.kord.common.Color
@@ -22,6 +25,7 @@ import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.behavior.createRole
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Member
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.channel.DmChannel
 import dev.kord.core.event.message.MessageCreateEvent
@@ -29,8 +33,10 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.event.message.ReactionRemoveEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
+import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
+
+private val logger = KotlinLogging.logger {}
 
 class IntroductionExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
@@ -43,26 +49,32 @@ class IntroductionExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
         event<MessageCreateEvent> {
             check(::isNotBot)
-            check(inChannel(Snowflake(844932506046300221)))
+
+            check {
+                val id = it.getGuild()?.introductionChannelSnowflake ?: return@check false
+                inChannel(Snowflake(id)).invoke(it)
+            }
 
             action {
                 val member = event.member ?: return@action
-
+                val guild = event.getGuild() ?: return@action
                 val (parser, name, pronouns) = IntroductionParser(event.message.content)
+
                 if (name == null && pronouns.isEmpty()) return@action
 
-                with(member) {
-                    val introduction = Introduction(
-                        userSnowflake = id.value,
-                        guildSnowflake = guildId.value,
-                        _name = name ?: username,
-                        nameEmoji = Pronoun.unicodes.first(),
-                        pronouns = pronouns,
-                        _aboutMeResult = parser.parseAboutYou(assistant)
-                    )
-
-                    transaction { introduction.insert() }
-                    introduction.sendTo(this)
+                with(member) member@{
+                    Introduction(
+                        id.value,
+                        guildId.value,
+                        name ?: username,
+                        nameEmoji = "\u2705",
+                        pronouns,
+                        parser.parseAboutYou(assistant)
+                    ).apply {
+                        sendTo(this@member)?.also {
+                            insertOrUpdate(it.id.value, member.insertOrUpdate(), guild.insertOrUpdate())
+                        }
+                    }
                 }
             }
         }
@@ -71,53 +83,73 @@ class IntroductionExtension(override val bot: ExtensibleBot) : Extension(bot) {
             check(::noGuild)
             check(::isNotBot)
 
-            action { event.kord.handleIntroductionReaction(event.userId.value, event.emoji, addReaction = true) }
+            action {
+                with(event) {
+                    kord.handleIntroductionReaction(
+                        userId.value,
+                        messageId.value,
+                        emoji,
+                        addReaction = true
+                    )
+                }
+            }
         }
 
         event<ReactionRemoveEvent> {
             check(::noGuild)
             check(::isNotBot)
 
-            action { event.kord.handleIntroductionReaction(event.userId.value, event.emoji, addReaction = false) }
+            action {
+                with(event) {
+                    kord.handleIntroductionReaction(
+                        userId.value,
+                        messageId.value,
+                        emoji,
+                        addReaction = false
+                    )
+                }
+            }
         }
     }
 }
 
-private suspend fun Introduction.sendTo(member: Member) {
-    member.getDmChannelOrNull()
-        ?.createEmbed {
-            author {
-                name = member.username
-                icon = member.avatar.url
-            }
-
-            color = member.getColor()
-
-            description = buildString {
-                append("Thanks for introducing yourself to the Beach Bunny community!\n\n")
-                append("We detected a name and/or pronoun(s) from your messages. ")
-                append("Feel free to get yourself some sweet server customizations!\n\n")
-
-                if (name.isNotEmpty()) {
-                    append("If you'd like to change your nickname in the server ")
-                    append("to **$name**, react with $nameEmoji\n\n")
-                }
-
-                pronouns.forEachIndexed { i, pronoun ->
-                    append("**Pronoun:** ${pronoun.value}\n")
-                    append("**Reaction:** ${Pronoun.unicodes.elementAt(i + 1)}\n\n")
-                }
-
-                if (aboutMeResult.isNotEmpty()) append(aboutMeResult)
-            }
-        }?.apply {
-            val reactions = pronouns.size + if (name.isNotEmpty()) 1 else 0
-            repeat(reactions) { addReaction(Pronoun.unicodes.elementAt(it)) }
+private suspend fun Introduction.sendTo(member: Member): Message? {
+    return member.getDmChannelOrNull()?.createEmbed {
+        author {
+            name = member.username
+            icon = member.avatar.url
         }
+
+        color = member.getTopRoleWithColor()?.color
+
+        description = buildString {
+            append("Thanks for introducing yourself to the **${member.getGuildOrNull()?.name}** community!\n\n")
+            append("We detected a name and/or pronoun(s) from your messages. ")
+            append("Feel free to get yourself some sweet server customizations!\n\n")
+
+            if (name.isNotEmpty()) {
+                append("If you'd like to change your nickname in the server ")
+                append("to **$name**, react with $nameEmoji\n\n")
+            }
+
+            pronouns.forEachIndexed { i, pronoun ->
+                append("**Pronoun:** ${pronoun.value}\n")
+                append("**Reaction:** ${Pronoun.unicodes.elementAt(i)}\n\n")
+            }
+
+            if (aboutMeResult.isNotEmpty()) append(aboutMeResult)
+        }
+
+        addBranding()
+    }?.apply {
+        if (name.isNotEmpty()) addReaction("\u2705")
+        repeat(pronouns.size) { addReaction(Pronoun.unicodes.elementAt(it)) }
+    }
 }
 
 private suspend fun Kord.handleIntroductionReaction(
     userSnowflake: Long,
+    messageSnowflake: Long,
     emoji: ReactionEmoji,
     addReaction: Boolean
 ) {
@@ -126,8 +158,8 @@ private suspend fun Kord.handleIntroductionReaction(
     val unicode = emoji.name
 
     newSuspendedTransaction {
-        val name = selectName(userSnowflake, unicode)
-        val pronoun = selectPronoun(userSnowflake, unicode)
+        val name = selectName(userSnowflake, messageSnowflake, unicode)
+        val pronoun = selectPronoun(userSnowflake, messageSnowflake, unicode)
 
         name?.apply {
             getGuild(Snowflake(name.first))?.apply {
@@ -153,7 +185,7 @@ private suspend fun Kord.handleIntroductionReaction(
 
                         getDmChannelOrNull()?.apply {
                             if (addReaction) createMessageAndDelete("You now have the **${role.name}** role.")
-                            else createMessageAndDelete("You no longer have the ${role.name} role.")
+                            else createMessageAndDelete("You no longer have the **${role.name}** role.")
                         }
                     } else {
                         if (addReaction)
@@ -176,7 +208,7 @@ private suspend fun Kord.handleIntroductionReaction(
     }
 }
 
-private suspend fun DmChannel.createMessageAndDelete(content: String) {
+suspend fun DmChannel.createMessageAndDelete(content: String) {
     val message = createMessage(content)
     delay(7000)
     message.delete()

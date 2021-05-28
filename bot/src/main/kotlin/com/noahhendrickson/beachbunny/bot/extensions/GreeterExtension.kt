@@ -5,9 +5,9 @@ import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.kotlindiscord.kord.extensions.checks.inChannel
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.utils.addReaction
+import com.noahhendrickson.beachbunny.bot.database.ignore
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.message.MessageCreateEvent
-import mu.KotlinLogging
 
 class GreeterExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
@@ -19,7 +19,9 @@ class GreeterExtension(override val bot: ExtensibleBot) : Extension(bot) {
 
             action {
                 val message = event.message
-                message.addReaction(Emojis.wave.code)
+
+                if (message.author?.ignore == false)
+                    message.addReaction(Emojis.wave.code)
             }
         }
     }

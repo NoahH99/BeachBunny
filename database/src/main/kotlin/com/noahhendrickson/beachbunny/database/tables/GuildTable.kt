@@ -11,6 +11,8 @@ object GuildTable : IntIdTable() {
 
     val prefix = varchar("prefix", 15).default(defaultPrefix)
     val logChannelSnowflake = long("log_channel_snowflake").nullable().default(null)
+    val introductionChannelSnowflake = long("introduction_channel_snowflake").nullable().default(null)
+    val greeterChannelSnowflake = long("greeter_channel_snowflake").nullable().default(null)
 
 }
 
@@ -18,8 +20,12 @@ fun insertGuildAndGetId(
     guildSnowflake: Long,
     prefix: String = GuildTable.defaultPrefix,
     logChannelSnowflake: Long? = null,
+    introductionChannelSnowflake: Long? = null,
+    greeterChannelSnowflake: Long? = null,
 ) = GuildTable.insertAndGetId({ GuildTable.guildSnowflake eq guildSnowflake }) {
     it[GuildTable.guildSnowflake] = guildSnowflake
     it[GuildTable.prefix] = prefix
     it[GuildTable.logChannelSnowflake] = logChannelSnowflake
+    it[GuildTable.introductionChannelSnowflake] = introductionChannelSnowflake
+    it[GuildTable.greeterChannelSnowflake] = greeterChannelSnowflake
 }

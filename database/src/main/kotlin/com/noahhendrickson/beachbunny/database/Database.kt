@@ -18,7 +18,7 @@ object Database {
 
     private val tables = arrayOf(
         GuildTable,
-        IntroductionPronounXref,
+        UserPronounXref,
         IntroductionTable,
         PronounTable,
         RoleTable,
